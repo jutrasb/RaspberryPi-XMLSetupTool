@@ -1,6 +1,6 @@
 <SetupData>
 	<Hostname>RaspberryPiTest</Hostname>
-	<IP-Address>10.1.6.88</IP-Address>
+	<IP-Address>10.1.6.160</IP-Address>
 	<Netmask>255.255.0.0</Netmask>
 	<Gateway>10.1.1.1</Gateway>
 	<WiFi-SSID>WFCWireless1978</WiFi-SSID>
