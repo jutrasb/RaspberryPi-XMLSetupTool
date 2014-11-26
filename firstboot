@@ -75,6 +75,7 @@ LOCKFILE="/var/lock/firstboot"
 
 # If $LOCKFILE does not exist, run the script.
 if [ ! -f $LOCKFILE ]; then
+	touch $LOCKFILE
 	echo "Running first boot script..."
 
 	# Change $XML_FILE to be the input XML file.
