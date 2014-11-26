@@ -79,7 +79,7 @@ if [ ! -f $LOCKFILE ]; then
 	echo "Running first boot script..."
 
 	# Change $XML_FILE to be the input XML file.
-	XML_FILE="test.xml"
+	XML_FILE="/boot/firstboot.xml"
 	XML_COMMAND="xmlstarlet sel -t -v"
 
 	# Get the desired Hostname.
