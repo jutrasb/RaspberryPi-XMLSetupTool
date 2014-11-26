@@ -1,0 +1,170 @@
+#!/bin/bash
+
+# This script will run on the first boot of the system.
+# This file is located in: /etc/init.d/firstboot
+
+WriteInterfacesFile()
+{
+	# This function will write the appropriate interfaces file to $1
+	# depending on what information is provided in $XML_FILE
+	if [ "$WIFI_SSID" != '' ]; then
+cat << EOF > $1
+iface eth0 inet static
+address $IP_ADDRESS
+netmask $NETMASK
+gateway $GATEWAY
+
+auto wlan0
+allow-hotplug wlan0
+iface wlan0 inet static
+address $IP_ADDRESS
+netmask $NETMASK
+gateway $GATEWAY
+
+wireless-essid $WIFI_SSID
+wireless-key $WIFI_PASSWORD
+EOF
+	else
+cat << EOF > $1
+iface eth0 inet static
+address $IP_ADDRESS
+netmask $NETMASK
+gateway $GATEWAY
+EOF
+	fi
+	echo "Interfaces file written to $1."
+}
+
+WriteHostnameFiles()
+{
+	# This function updates multiple files ($1 = hosts and $2 = hostname)
+	# to update the hostname of the system.
+	if [ "$HOSTNAME" != '' ]; then
+cat << EOF > $1
+127.0.0.1	localhost
+::1		localhost ip6-localhost ip6-loopback
+fe00::0		ip6-localnet
+ff00::0		ip6-mcastprefix
+ff02::1		ip6-allnodes
+ff02::2		ip6-allrouters
+
+127.0.1.1	$HOSTNAME
+EOF
+		echo "Hosts file written to $1."
+cat << EOF > $2
+$HOSTNAME
+EOF
+		echo "Hostname file written to $2."
+	else
+		echo "No hostname provided in $XML_FILE! Aborting."
+	fi
+}
+
+WriteResolvConfFile()
+{
+cat << EOF > $1
+domain woodbridge.corp
+search woodbridge.corp
+nameserver 10.8.3.1
+nameserver 10.99.3.38
+EOF
+	echo "Resolv.conf file written to $1."
+}
+
+LOCKFILE="/var/lock/firstboot"
+
+# If $LOCKFILE does not exist, run the script.
+if [ ! -f $LOCKFILE ]; then
+	echo "Running first boot script..."
+
+	# Change $XML_FILE to be the input XML file.
+	XML_FILE="test.xml"
+	XML_COMMAND="xmlstarlet sel -t -v"
+
+	# Get the desired Hostname.
+	QUERY="//SetupData/Hostname"
+	HOSTNAME=$($XML_COMMAND $QUERY $XML_FILE)
+
+	# Get the Static IP Address.
+	QUERY="//SetupData/IP-Address"
+	IP_ADDRESS=$($XML_COMMAND $QUERY $XML_FILE)
+
+	# Get the Static IP Address.
+	QUERY="//SetupData/Netmask"
+	NETMASK=$($XML_COMMAND $QUERY $XML_FILE)
+
+	# Get the Static IP Address.
+	QUERY="//SetupData/Gateway"
+	GATEWAY=$($XML_COMMAND $QUERY $XML_FILE)
+
+	# Get the Wi-Fi SSID.
+	QUERY="//SetupData/WiFi-SSID"
+	WIFI_SSID=$($XML_COMMAND $QUERY $XML_FILE)
+
+	# Get the Wi-Fi Password.
+	QUERY="//SetupData/WiFi-Password"
+	WIFI_PASSWORD=$($XML_COMMAND $QUERY $XML_FILE)
+
+	# Get the Chromium URL and replace &amp; with &.
+	QUERY="//SetupData/Chromium-URL"
+	CHROMIUM_URL=$($XML_COMMAND $QUERY $XML_FILE)
+	CHROMIUM_URL="${CHROMIUM_URL//&amp;/&}"
+
+	# Ask the user to verify the information.
+	echo "Please verify the following information:"
+	echo
+	echo "Hostname:         $HOSTNAME"
+	echo "IP Address:       $IP_ADDRESS"
+	echo "Netmask:          $NETMASK"
+	echo "Default Gateway:  $GATEWAY"
+	echo "Wi-Fi SSID:       $WIFI_SSID"
+	echo "Wi-Fi Password:   $WIFI_PASSWORD"
+	echo "OEE System URL:   $CHROMIUM_URL"
+	echo
+	read -p "Is the above information correct? [Y/n] " -n 1 -r
+	echo
+	if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+		exit 1
+	fi
+	echo
+
+	# Write the Interfaces file to $INTERFACES_FILE
+	INTERFACES_FILE="/boot/interfaces"
+	WriteInterfacesFile $INTERFACES_FILE
+
+	# Change the Hostname of the system by writing $HOSTS_FILE and $HOSTNAME_FILE
+	HOSTS_FILE="/boot/hosts"
+	HOSTNAME_FILE="/boot/hostname"
+	WriteHostnameFiles $HOSTS_FILE $HOSTNAME_FILE
+
+	# Write the Resolv.conf file to $RESOLVCONF
+	RESOLVCONF_FILE="/boot/resolv.conf"
+	WriteResolvConfFile $RESOLVCONF_FILE
+
+	echo "Copying $INTERFACES_FILE to /etc/network/interfaces."
+	sudo cp $INTERFACES_FILE /etc/network/interfaces
+	echo "Copying $HOSTS_FILE to /etc/hosts."
+	sudo cp $HOSTSFILE /etc/hosts
+	echo "Copying $HOSTNAME_FILE to /etc/hostname."
+	sudo cp $HOSTNAME_FILE /etc/hostname
+	echo "Copying $RESOLVCONF_FILE to /etc/resolv.conf."
+	sudo cp $RESOLVCONF_FILE /etc/resolv.conf
+
+	# Change the Chromium URL in start_chromium.sh
+	echo "Updating the Chromium URL in start_chromium.sh."
+	SED_STRING="3s/.*/URL=\""$CHROMIUM_URL"\"/"
+	sed -i $SED_STRING /home/pi/start_chromium.sh
+
+	echo
+	read -p "Changes made require a system reboot. Reboot now? [Y/n] " -n 1 -r
+	echo
+	if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+		exit 1
+	fi
+	sudo reboot
+}
+else
+{
+	echo "This script ($0) has already been run!"
+	echo "If you wish to run this script again, please delete the lockfile at: $LOCKFILE"
+}
