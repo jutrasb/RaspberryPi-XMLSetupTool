@@ -143,13 +143,13 @@ if [ ! -f $LOCKFILE ]; then
 	WriteResolvConfFile $RESOLVCONF_FILE
 
 	echo "Copying $INTERFACES_FILE to /etc/network/interfaces."
-	sudo cp $INTERFACES_FILE /etc/network/interfaces
+	sudo mv -f $INTERFACES_FILE /etc/network/interfaces
 	echo "Copying $HOSTS_FILE to /etc/hosts."
-	sudo cp $HOSTSFILE /etc/hosts
+	sudo mv -f $HOSTSFILE /etc/hosts
 	echo "Copying $HOSTNAME_FILE to /etc/hostname."
-	sudo cp $HOSTNAME_FILE /etc/hostname
+	sudo mv -f $HOSTNAME_FILE /etc/hostname
 	echo "Copying $RESOLVCONF_FILE to /etc/resolv.conf."
-	sudo cp $RESOLVCONF_FILE /etc/resolv.conf
+	sudo mv -f $RESOLVCONF_FILE /etc/resolv.conf
 
 	# Change the Chromium URL in start_chromium.sh
 	echo "Updating the Chromium URL in start_chromium.sh."
