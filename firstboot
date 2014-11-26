@@ -163,9 +163,7 @@ if [ ! -f $LOCKFILE ]; then
 		exit 1
 	fi
 	sudo reboot
-}
 else
-{
 	echo "This script ($0) has already been run!"
 	echo "If you wish to run this script again, please delete the lockfile at: $LOCKFILE"
-}
+fi
