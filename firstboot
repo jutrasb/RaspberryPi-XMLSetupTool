@@ -75,7 +75,7 @@ LOCKFILE="/var/lock/firstboot"
 
 # If $LOCKFILE does not exist, run the script.
 if [ ! -f $LOCKFILE ]; then
-	touch $LOCKFILE
+	#touch $LOCKFILE
 	echo "Running first boot script..."
 
 	# Change $XML_FILE to be the input XML file.
@@ -109,7 +109,7 @@ if [ ! -f $LOCKFILE ]; then
 	# Get the Chromium URL and replace &amp; with &.
 	QUERY="//SetupData/Chromium-URL"
 	CHROMIUM_URL=$($XML_COMMAND $QUERY $XML_FILE)
-	CHROMIUM_URL="${CHROMIUM_URL//&amp;/&}"
+	CHROMIUM_URL=$(echo "$CHROMIUM_URL" | sed -e "s/&amp;/\&/g")
 
 	# Ask the user to verify the information.
 	echo "Please verify the following information:"
@@ -122,10 +122,10 @@ if [ ! -f $LOCKFILE ]; then
 	echo "Wi-Fi Password:   $WIFI_PASSWORD"
 	echo "OEE System URL:   $CHROMIUM_URL"
 	echo
-	read -p "Is the above information correct? [Y/n] " -n 1 -r
+	read -r -p "Is the above information correct? [Y/n] " REPLY
 	echo
-	if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-		exit 1
+	if [ $REPLY != "Y" ] && [ $REPLY != "y" ]; then
+		exit 0
 	fi
 	echo
 
@@ -142,27 +142,26 @@ if [ ! -f $LOCKFILE ]; then
 	RESOLVCONF_FILE="/boot/resolv.conf"
 	WriteResolvConfFile $RESOLVCONF_FILE
 
-	echo "Copying $INTERFACES_FILE to /etc/network/interfaces."
-	sudo mv -f $INTERFACES_FILE /etc/network/interfaces
-	echo "Copying $HOSTS_FILE to /etc/hosts."
-	sudo mv -f $HOSTSFILE /etc/hosts
-	echo "Copying $HOSTNAME_FILE to /etc/hostname."
-	sudo mv -f $HOSTNAME_FILE /etc/hostname
-	echo "Copying $RESOLVCONF_FILE to /etc/resolv.conf."
-	sudo mv -f $RESOLVCONF_FILE /etc/resolv.conf
+	echo "Moving $INTERFACES_FILE to /etc/network/interfaces."
+	#mv -f $INTERFACES_FILE /etc/network/interfaces
+	echo "Moving $HOSTS_FILE to /etc/hosts."
+	#mv -f $HOSTSFILE /etc/hosts
+	echo "Moving $HOSTNAME_FILE to /etc/hostname."
+	#mv -f $HOSTNAME_FILE /etc/hostname
+	echo "Moving $RESOLVCONF_FILE to /etc/resolv.conf."
+	#mv -f $RESOLVCONF_FILE /etc/resolv.conf
 
 	# Change the Chromium URL in start_chromium.sh
 	echo "Updating the Chromium URL in start_chromium.sh."
-	SED_STRING="3s/.*/URL=\""$CHROMIUM_URL"\"/"
-	sed -i $SED_STRING /home/pi/start_chromium.sh
+	sed -i "3s,.*,URL=\"$CHROMIUM_URL\",g" /home/pi/start_chromium.sh
 
 	echo
-	read -p "Changes made require a system reboot. Reboot now? [Y/n] " -n 1 -r
+	read -r -p "Changes made require a system reboot. Reboot now? [Y/n] " REPLY
 	echo
-	if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-		exit 1
+	if [ $REPLY != "Y" ] && [ $REPLY != "y" ]; then
+		exit 0
 	fi
-	sudo reboot
+	#sudo reboot
 else
 	echo "This script ($0) has already been run!"
 	echo "If you wish to run this script again, please delete the lockfile at: $LOCKFILE"
