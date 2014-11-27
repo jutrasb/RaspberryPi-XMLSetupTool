@@ -143,13 +143,13 @@ if [ ! -f $LOCKFILE ]; then
 	WriteResolvConfFile $RESOLVCONF_FILE
 
 	echo "Moving $INTERFACES_FILE to /etc/network/interfaces."
-	#mv -f $INTERFACES_FILE /etc/network/interfaces
+	mv -f $INTERFACES_FILE /etc/network/interfaces
 	echo "Moving $HOSTS_FILE to /etc/hosts."
-	#mv -f $HOSTSFILE /etc/hosts
+	mv -f $HOSTSFILE /etc/hosts
 	echo "Moving $HOSTNAME_FILE to /etc/hostname."
-	#mv -f $HOSTNAME_FILE /etc/hostname
+	mv -f $HOSTNAME_FILE /etc/hostname
 	echo "Moving $RESOLVCONF_FILE to /etc/resolv.conf."
-	#mv -f $RESOLVCONF_FILE /etc/resolv.conf
+	mv -f $RESOLVCONF_FILE /etc/resolv.conf
 
 	# Change the Chromium URL in start_chromium.sh
 	echo "Updating the Chromium URL in start_chromium.sh."
