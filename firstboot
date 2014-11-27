@@ -75,7 +75,7 @@ LOCKFILE="/var/lock/firstboot"
 
 # If $LOCKFILE does not exist, run the script.
 if [ ! -f $LOCKFILE ]; then
-	#touch $LOCKFILE
+	touch $LOCKFILE
 	echo "Running first boot script..."
 
 	# Change $XML_FILE to be the input XML file.
@@ -122,7 +122,7 @@ if [ ! -f $LOCKFILE ]; then
 	echo "Wi-Fi Password:   $WIFI_PASSWORD"
 	echo "OEE System URL:   $CHROMIUM_URL"
 	echo
-	read -r -p "Is the above information correct? [Y/n] " REPLY
+	#read -r -p "Is the above information correct? [Y/n] " REPLY
 	echo
 	if [ $REPLY != "Y" ] && [ $REPLY != "y" ]; then
 		exit 0
@@ -156,12 +156,12 @@ if [ ! -f $LOCKFILE ]; then
 	sed -i "3s,.*,URL=\"$CHROMIUM_URL\",g" /home/pi/start_chromium.sh
 
 	echo
-	read -r -p "Changes made require a system reboot. Reboot now? [Y/n] " REPLY
+	#read -r -p "Changes made require a system reboot. Reboot now? [Y/n] " REPLY
 	echo
 	if [ $REPLY != "Y" ] && [ $REPLY != "y" ]; then
 		exit 0
 	fi
-	#sudo reboot
+	sudo reboot
 else
 	echo "This script ($0) has already been run!"
 	echo "If you wish to run this script again, please delete the lockfile at: $LOCKFILE"
