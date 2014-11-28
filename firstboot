@@ -1,7 +1,27 @@
 #!/bin/bash
-
-# This script will run on the first boot of the system.
-# This file is located in: /etc/init.d/firstboot
+##################################################################
+# Title:     Firstboot Script for Raspberry Pi
+# Author:    Brandon Jutras
+# Latest Update Date: November 28, 2014
+#
+# Purpose:
+#
+# Script automates Raspberry Pi rollout to devices in different
+# locations. It reads a firstboot.xml file to provide information
+# on the desired hostname, static IP address, default gateway,
+# netmask, and desired Chromium URL upon boot in kiosk mode.
+#
+# Uses a lock file which prevents the script from running more
+# than once. If the script is to be run more than once, remove
+# the lockfile from the default location of /var/boot/firstboot
+#
+# Instructions:
+#
+# 1. Download and place in /etc/init.d/firstboot
+# 2. Run "sudo chmod 0755 /etc/init.d/firstboot"
+# 3. Edit /etc/rc.local and place "sudo /etc/init.d/firstboot"
+#    before the "exit 0" line.
+##################################################################
 
 WriteInterfacesFile()
 {
